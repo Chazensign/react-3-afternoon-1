@@ -1,16 +1,24 @@
 import React, { Component } from 'react';
-
+import axios from 'axios'
 import './App.css';
 
 import Header from './Header/Header';
 import Compose from './Compose/Compose';
+import Post from './Post/Post';
 
+const SOURCE = 'https://practiceapi.devmountain.com/api/posts'
 class App extends Component {
   constructor() {
     super();
 
     this.state = {
-      posts: []
+      posts: [],
+      newPost: {
+        id: null,
+        text: '',
+        date: ''
+      },
+      searchVal: ''
     };
 
     this.updatePost = this.updatePost.bind( this );
@@ -19,32 +27,52 @@ class App extends Component {
   }
   
   componentDidMount() {
+    axios.get(SOURCE).then(result => {
+      this.setState({ posts: result.data})})
 
   }
 
-  updatePost() {
-  
+  updatePost(id, text) {
+    axios
+    .put(`${SOURCE}?id=${id}`, { text })
+      .then(res => {
+        this.setState({ posts: res.data });
+      })
+      .catch(err => {
+        console.log(err)
+      })
   }
 
-  deletePost() {
-
+  deletePost(id) {
+    axios.delete(`${SOURCE}?id=${id}`).then(result => this.setState({ 
+      posts: result.data}))
+    .catch(err => console.log(err)
+    )
   }
 
-  createPost() {
+  createPost(text) {
+    axios.post(`${SOURCE}`, { text }).then(res => this.setState({ posts: res.data}))
+
+  }
+  handleChange = (value) => {
+    this.setState({ searchVal: value });
+    console.log(this.state.searchVal)
+  }
+  postSearch = () => {
+    axios.get(`https://practiceapi.devmountain.com/api/posts/filter?text=${encodeURI(this.state.searchVal)}`)
+    .then(res => this.setState({ posts: res.data }))
 
   }
 
   render() {
     const { posts } = this.state;
-
     return (
       <div className="App__parent">
-        <Header />
+        <Header handleChangeFn={this.handleChange} postSearchFn={this.postSearch} />
 
         <section className="App__content">
-
-          <Compose />
-          
+          <Compose createPostFn={this.createPost}/>
+          {posts.map((post) => <Post deletePostFn={this.deletePost} key={ post.id } id={post.id} updatePostFn={this.updatePost} posts={posts} text={post.text} date={post.date} />)}
         </section>
       </div>
     );

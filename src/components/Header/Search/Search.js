@@ -12,9 +12,9 @@ export default class Search extends Component {
       <section className="Search__parent">
 
         <div className="Search__content">
-          <input placeholder="Search Your Feed" />
+          <input name='searchVal' onChange={(event) => this.props.handleChangeFn(event.target.value)} placeholder="Search Your Feed" />
 
-          <SearchIcon id="Search__icon" />
+          <SearchIcon onClick={this.props.postSearchFn} id="Search__icon" />
         </div>
         
       </section>
